@@ -6,7 +6,6 @@ inhibit_all_warnings!
 project 'SwiftApp'
 workspace 'SwiftApp'
 
-source 'https://bancopan.visualstudio.com/commons-lib/_git/mobile-ios--pan-podspecs'
 source 'https://github.com/CocoaPods/Specs.git'
 
 def shared_pods  
