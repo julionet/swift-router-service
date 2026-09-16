@@ -1,13 +1,13 @@
-# Arquitetura MVVM + RouterService — PanPaymentGateway
+# Arquitetura MVVM + RouterService — PaymentGateway
 
-> Baseado em análise real do código em `PanPaymentGateway/Classes/PaymentChoice`,
+> Baseado em análise real do código em `PaymentGateway/Classes/PaymentChoice`,
 > `PaymentTypeSelector`, `PaymentErrorHandler` e `PaymentValidation`. Nenhuma
 > informação aqui foi inventada — tudo tem um exemplo correspondente no repositório.
 
 ## Visão Geral
 
 Cada cena ("feature") é composta por um conjunto de arquivos que se conectam através
-de um mecanismo de navegação por `Route` (pod `PanRouterServiceInterface`) e injeção
+de um mecanismo de navegação por `Route` (pod `RouterServiceInterface`) e injeção
 de dependência via property wrapper `@Dependency` (pod `CompositionRootInterface`).
 
 ```mermaid
@@ -28,12 +28,12 @@ flowchart LR
 - `Route`: `struct` pública conforme `Route`, com `static let identifier` e o
   `dataStore`. É o "endereço" usado para navegar.
 - Localização observada: cenas expostas como ponto de entrada do pod (ex:
-  `PaymentChoice`) ficam em `PanPaymentGatewayInterface/Classes/Model` e
+  `PaymentChoice`) ficam em `PaymentGatewayInterface/Classes/Model` e
   `.../Route`. Cenas de navegação só interna ao pod (ex: `PaymentTypeSelector`,
   `PaymentErrorHandler`) às vezes ficam locais em `{Feature}/Interface/`, com
   visibilidade `internal` (`PaymentErrorRoute`) ou `public` (`PaymentTypeSelectorRoute`).
   **Decisão adotada pela skill `mvvm-router-new-feature`: sempre gerar em
-  `PanPaymentGatewayInterface` (público), para manter consistência.**
+  `PaymentGatewayInterface` (público), para manter consistência.**
 
 ### 2. `{Feature}Handler` (Implementation)
 
@@ -49,7 +49,7 @@ public final class {Feature}Handler: RouteHandler {
 ```
 
 Precisa ser registrado manualmente em
-`Example/Example/ModulesRegistration/PanPaymentGatewayRegistration.swift`
+`Example/Example/ModulesRegistration/PaymentGatewayRegistration.swift`
 (`routerService.register(routeHandler: ...)`). **Gap conhecido no projeto:**
 `PaymentErrorHandler` não está registrado ali apesar de ser navegado via
 `routerService?.navigate(toRoute:)` a partir de outras cenas — não replique esse gap
@@ -77,7 +77,7 @@ final class {Feature}Feature: Feature {
 - Resolve as dependências via `@Dependency` (nunca via `init` manual do app).
 - Injeta o `dataStore` do `Route` no `ViewModel` **depois** de construí-lo (a
   propriedade `dataStore` do ViewModel é `var`, não passada no `init`).
-- Outras dependências vistas em produção: `PanStorageService`
+- Outras dependências vistas em produção: `StorageService`
   (`PaymentChoiceFeature`).
 
 ### 4. `{Feature}Model` (Implementation)
@@ -163,7 +163,7 @@ final class {Feature}View: UIView {
 - Expõe `func setup(model: {Feature}Model.SceneModel)`, chamado pela
   `ViewController` para atualizar a UI a partir do `sceneModel` do ViewModel.
 - Componentes visuais reaproveitáveis entre features continuam em
-  `PanPaymentGateway/Classes/Views/` — `{Feature}View` é específica desta cena.
+  `PaymentGateway/Classes/Views/` — `{Feature}View` é específica desta cena.
 
 ### 7. `{Feature}Worker` (Implementation, opcional)
 
@@ -207,7 +207,7 @@ struct {Feature}Response: Decodable {
 Arquivo único com `{Feature}Request` e `{Feature}Response` juntos, ao lado do
 `{Feature}Worker.swift`. Só existe quando a cena precisa chamar API (mesma
 condição do Worker/Provider). Diferente de `{Feature}DataStore`/`{Feature}Route`,
-este contrato **não** vai para `PanPaymentGatewayInterface`: é um detalhe de
+este contrato **não** vai para `PaymentGatewayInterface`: é um detalhe de
 implementação da própria feature, consumido apenas pelo `Worker` e pelo
 `Provider` dela — nenhuma outra feature/pod precisa enxergá-lo.
 
@@ -237,7 +237,7 @@ enum {Feature}Keys {
 }
 ```
 
-Localização usando `PanExtensions` (`Localizable` protocol). O `tableName`
+Localização usando `Extensions` (`Localizable` protocol). O `tableName`
 corresponde ao nome do `.strings`.
 
 ### 10. `Analytics/` (opcional, não gerado por esta skill)
