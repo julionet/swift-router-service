@@ -52,8 +52,11 @@ jobs:
             -scheme SwiftApp \
             -workspace ./Example/SwiftApp.xcworkspace \
             -destination 'generic/platform=iOS' \
-            -configuration Release
-            CODE_SIGNING_ALLOWED=NO
+            -configuration Release \
+            CODE_SIGNING_ALLOWED=NO \
+            CODE_SIGNING_REQUIRED=NO \
+            CODE_SIGN_IDENTITY="" \
+            CODE_SIGNING_METHOD="manual"
 
       # 7. Cria a estrutura de pastas obrigatória que a Apple exige dentro de um .ipa
       - name: Empacotar para formato .ipa
