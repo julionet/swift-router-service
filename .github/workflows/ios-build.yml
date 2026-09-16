@@ -1,0 +1,31 @@
+name: CI iOS Nativo
+
+on:
+  push:
+    branches: [ "main", "develop" ]
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  build:
+    runs-on: macos-latest
+
+    steps:
+      # 1. Baixa o código do repositório
+      - name: Checkout do repositório
+        uses: actions/checkout@v4
+
+      # 2. (Opcional) Define a versão do Xcode caso seu projeto exija uma versão específica
+      - name: Selecionar versão do Xcode
+        uses: maxim-lobanov/setup-xcode@v1
+        with:
+          xcode-version: 'latest-stable' # Altere para '15.4' ou similar se necessário
+
+      # 3. Executa a compilação voltada para o Simulador (não exige assinatura de perfil)
+      - name: Compilar aplicativo para Simulador iOS
+        run: |
+          xcodebuild build \
+            -scheme SwiftApp \
+            -workspace SwiftApp.xcworkspace \
+            -destination 'generic/platform=iOS Simulator' \
+            -configuration Debug
