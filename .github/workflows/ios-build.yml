@@ -4,7 +4,7 @@ on:
   push:
     branches: [ "main", "develop" ]
   pull_request:
-    branches: [ "main" ]
+    branches: [ "main", "develop" ]
 
 jobs:
   build:
@@ -46,12 +46,24 @@ jobs:
           pod install
 
       # 6. Compila o app simulando um dispositivo físico, mas sem exigir assinatura da Apple
-      - name: Compilar aplicativo (.app)
+      - name: Compilar aplicativo (Debug)
+        if: github.ref == 'refs/heads/develop' || github.base_ref == 'develop'
         run: |
           xcodebuild build \
             -scheme SwiftApp \
-            -workspace ./Example/SwiftApp.xcworkspace \
-            -destination 'generic/platform=iOS' \
+            -workspace "Example/SwiftApp.xcworkspace" \
+            -destination "generic/platform=iOS" \
+            -configuration Debug \
+            CODE_SIGNING_ALLOWED=NO
+            
+      # 6. Compila o app simulando um dispositivo físico, mas sem exigir assinatura da Apple
+      - name: Compilar aplicativo (Release)
+        if: github.ref == 'refs/heads/main' || github.base_ref == 'main'
+        run: |
+          xcodebuild build \
+            -scheme SwiftApp \
+            -workspace "Example/SwiftApp.xcworkspace" \
+            -destination "generic/platform=iOS" \
             -configuration Release \
             CODE_SIGNING_ALLOWED=NO \
             CODE_SIGNING_REQUIRED=NO \
@@ -60,6 +72,7 @@ jobs:
 
       # 7. Cria a estrutura de pastas obrigatória que a Apple exige dentro de um .ipa
       - name: Empacotar para formato .ipa
+        if: github.ref == 'refs/heads/main' || github.base_ref == 'main'
         run: |
           mkdir -p Payload
           cp -r ~/Library/Developer/Xcode/DerivedData/*/Build/Products/Release-iphoneos/*.app Payload/
@@ -67,6 +80,7 @@ jobs:
 
       # 8. Disponibiliza o arquivo .ipa para download na página do seu build no GitHub
       - name: Upload do arquivo .ipa para o GitHub
+        if: github.ref == 'refs/heads/main' || github.base_ref == 'main'
         uses: actions/upload-artifact@v4
         with:
           name: aplicativo-ios-windows
