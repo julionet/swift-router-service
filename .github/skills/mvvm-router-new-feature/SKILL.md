@@ -1,18 +1,18 @@
 ---
 name: mvvm-router-new-feature
-description: "Cria a estrutura básica de arquivos Swift para uma nova cena/feature usando a arquitetura MVVM + RouterService do PanPaymentGateway (BancoDigital iOS), a partir de templates. Use quando: iniciar o desenvolvimento de uma nova cena; gerar o boilerplate (Feature, Handler, ViewModel, ViewController, Model, DataStore, Route, Resources e, opcionalmente, Worker/Provider) de um novo módulo do pod PanPaymentGateway."
+description: "Cria a estrutura básica de arquivos Swift para uma nova cena/feature usando a arquitetura MVVM + RouterService, a partir de templates. Use quando: iniciar o desenvolvimento de uma nova cena; gerar o boilerplate (Feature, Handler, ViewModel, ViewController, Model, DataStore, Route, Resources e, opcionalmente, Worker/Provider) de um novo módulo do pod PaymentGateway."
 argument-hint: "Nome da feature e se ela faz chamada de API (ex: 'PaymentSummary, com Worker/Provider')"
 ---
 
 # Skill: Criação de Estrutura Básica MVVM + RouterService (Novo Feature/Cena)
 
-Gera os arquivos básicos de uma nova cena Swift seguindo o padrão **MVVM orientado a cena, com navegação via `RouterService`** usado no pod `PanPaymentGateway`, tendo como referência o módulo `PanPaymentGateway/Classes/PaymentChoice`.
+Gera os arquivos básicos de uma nova cena Swift seguindo o padrão **MVVM orientado a cena, com navegação via `RouterService`** usado no pod `PaymentGateway`, tendo como referência o módulo `PaymentGateway/Classes/PaymentChoice`.
 
 Esta NÃO é a arquitetura VIP/Clean Swift (ver skills `vip-*`). Consulte [architecture-reference.md](./architecture-reference.md) para o detalhamento completo do padrão real observado no código.
 
 ## Quando Usar
 
-- Iniciar o desenvolvimento de uma nova feature/cena dentro do pod `PanPaymentGateway`
+- Iniciar o desenvolvimento de uma nova feature/cena dentro do pod `PaymentGateway`
 - Gerar o boilerplate padrão (sem lógica de negócio específica) para acelerar o início de um módulo
 
 ## Regras Importantes
@@ -20,8 +20,8 @@ Esta NÃO é a arquitetura VIP/Clean Swift (ver skills `vip-*`). Consulte [archi
 1. **Nunca invente informação.** Se houver qualquer dúvida (nome da feature, se ela faz chamada de API, nomes de campos de negócio, endpoint, etc.), **pergunte ao usuário** antes de prosseguir.
 2. **Gere somente os arquivos definidos pelo template** — nada de Analytics ou testes unitários, apenas o código base necessário para começar a implementação. `{Feature}View.swift` é sempre gerado (a `ViewController` instancia e usa `screenView` via `loadView()`).
 3. A pasta `Provider/` e o arquivo `{Feature}Worker.swift` só devem ser criados se o usuário confirmar explicitamente que a cena precisa fazer chamada de API.
-4. `{Feature}DataStore.swift` e `{Feature}Route.swift` **sempre** vão para o pod `PanPaymentGatewayInterface` (público), seguindo o padrão de `PaymentChoice` — mesmo que a cena só seja navegada internamente. Isso foi confirmado com o time como o padrão a seguir.
-5. O `{Feature}Handler` deve **sempre** ser registrado automaticamente em `Example/Example/ModulesRegistration/PanPaymentGatewayRegistration.swift`.
+4. `{Feature}DataStore.swift` e `{Feature}Route.swift` **sempre** vão para o pod `PaymentGatewayInterface` (público), seguindo o padrão de `PaymentChoice` — mesmo que a cena só seja navegada internamente. Isso foi confirmado com o time como o padrão a seguir.
+5. O `{Feature}Handler` deve **sempre** ser registrado automaticamente em `Example/Example/ModulesRegistration/PaymentGatewayRegistration.swift`.
 6. A pasta gerada para os arquivos deve ter exatamente o nome da feature (PascalCase).
 
 ## Procedure
@@ -54,7 +54,7 @@ Esta NÃO é a arquitetura VIP/Clean Swift (ver skills `vip-*`). Consulte [archi
 Crie a seguinte estrutura fixa (dentro do workspace já existente, não crie um novo pod):
 
 ```
-PanPaymentGateway/Classes/{Feature}/
+PaymentGateway/Classes/{Feature}/
 ├── Implementation/
 │   ├── {Feature}Feature.swift        ← templates/Feature.swift
 │   ├── {Feature}Handler.swift        ← templates/Handler.swift
@@ -70,7 +70,7 @@ PanPaymentGateway/Classes/{Feature}/
     ├── {Feature}.strings             ← templates/Strings.strings
     └── {Feature}Keys.swift           ← templates/Keys.swift
 
-PanPaymentGatewayInterface/Classes/
+PaymentGatewayInterface/Classes/
 ├── Model/{Feature}DataStore.swift    ← templates/DataStore.swift
 └── Route/{Feature}Route.swift        ← templates/Route.swift
 ```
@@ -87,11 +87,11 @@ Leia o conteúdo de cada template na pasta [templates](./templates) e crie o arq
 
 ### Passo 6 — Registrar o Handler
 
-Edite `Example/Example/ModulesRegistration/PanPaymentGatewayRegistration.swift` e adicione a nova linha dentro de `makePanPaymentGateway`, seguindo o padrão já existente:
+Edite `Example/Example/ModulesRegistration/PaymentGatewayRegistration.swift` e adicione a nova linha dentro de `makePaymentGateway`, seguindo o padrão já existente:
 
 ```swift
-extension PanDependencyInjection.RouteHandlerFactory {
-    public static func makePanPaymentGateway(with routerService: RouterService) {
+extension DependencyInjection.RouteHandlerFactory {
+    public static func makePaymentGateway(with routerService: RouterService) {
         routerService.register(routeHandler: PaymentChoiceHandler())
         routerService.register(routeHandler: PaymentTypeSelectorHandler())
         routerService.register(routeHandler: PaymentPersonalLoanValidationHandler())
@@ -109,14 +109,14 @@ extension PanDependencyInjection.RouteHandlerFactory {
 
 ## Estrutura de Referência (Módulo Real)
 
-O módulo usado como modelo para estes templates é `PanPaymentGateway/Classes/PaymentChoice` (o mais completo: possui `Worker`, `Provider` e `DataStore`/`Route` públicos no pod `PanPaymentGatewayInterface`). Para uma variação mais simples (sem Worker), veja `PanPaymentGateway/Classes/PaymentTypeSelector`.
+O módulo usado como modelo para estes templates é `PaymentGateway/Classes/PaymentChoice` (o mais completo: possui `Worker`, `Provider` e `DataStore`/`Route` públicos no pod `PaymentGatewayInterface`). Para uma variação mais simples (sem Worker), veja `PaymentGateway/Classes/PaymentTypeSelector`.
 
 Consulte [architecture-reference.md](./architecture-reference.md) para o detalhamento de cada camada, com base em código real do repositório.
 
 ## O Que NÃO Fazer
 
 - Não criar arquivos de Analytics — não faz parte deste padrão de scaffolding (algumas cenas do projeto têm `Analytics/`, outras não; a skill não gera essa pasta).
-- Não criar pasta `Views/` compartilhada própria — componentes reaproveitáveis entre features continuam em `PanPaymentGateway/Classes/Views/`; `{Feature}View.swift` é a view exclusiva desta cena e sempre fica dentro de `Implementation/`.
+- Não criar pasta `Views/` compartilhada própria — componentes reaproveitáveis entre features continuam em `PaymentGateway/Classes/Views/`; `{Feature}View.swift` é a view exclusiva desta cena e sempre fica dentro de `Implementation/`.
 - Não criar `Provider`/`Worker`/`Contract` sem confirmação explícita do usuário.
 - Não inventar campos de `DataStore`, `{Feature}Request`/`{Feature}Response` (em `{Feature}Contract.swift`) ou lógica de negócio — apenas comentários `// TODO:` indicando onde o desenvolvedor deve completar.
-- Não esquecer de registrar o `Handler` em `PanPaymentGatewayRegistration.swift`.
+- Não esquecer de registrar o `Handler` em `PaymentGatewayRegistration.swift`.
