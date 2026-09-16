@@ -13,11 +13,11 @@ jobs:
     steps:
       # 1. Baixa o código do seu repositório
       - name: Checkout do repositório
-        uses: actions/checkout@v4
+        uses: actions/checkout@v4.2.2 
 
       # 2. Configura a versão do Xcode (Garante compatibilidade com o seu código)
       - name: Selecionar versão do Xcode
-        uses: maxim-lobanov/setup-xcode@v1
+        uses: maxim-lobanov/setup-xcode@v1.6.0
         with:
           xcode-version: 'latest-stable'
 
@@ -27,18 +27,47 @@ jobs:
           brew install xcodegen
           xcodegen generate --spec Example/project.yml
 
-      # 4. Instala as dependências do CocoaPods
+      # 4. Configura o Cache do CocoaPods para acelerar os próximos builds
+      - name: Cache dos CocoaPods
+        uses: actions/cache@v4.2.2
+        with:
+          path: |
+            Example/Pods
+            ~/.cocoapods/repos
+          key: ${{ runner.os }}-pods-${{ hashFiles('Example/Podfile.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-pods-
+            
+      # 5. Instala as dependências do CocoaPods entrando na pasta Example
       # Nota: O CocoaPods já vem pré-instalado nos ambientes macOS do GitHub Actions
       - name: Instalar dependências (CocoaPods)
         working-directory: Example
         run: |
           pod install
 
-      # 5. Executa a compilação voltada para o Simulador (não exige assinatura de perfil)
-      - name: Compilar aplicativo para Simulador iOS
+      # 6. Compila o app simulando um dispositivo físico, mas sem exigir assinatura da Apple
+      - name: Compilar aplicativo (.app)
         run: |
           xcodebuild build \
             -scheme SwiftApp \
             -workspace ./Example/SwiftApp.xcworkspace \
-            -destination 'generic/platform=iOS Simulator' \
-            -configuration Debug
+            -destination 'generic/platform=iOS' \
+            -configuration Release \
+            CODE_SIGNING_ALLOWED=NO \
+            CODE_SIGNING_REQUIRED=NO \
+            CODE_SIGN_IDENTITY="" \
+            CODE_SIGNING_METHOD="manual"
+
+      # 7. Cria a estrutura de pastas obrigatória que a Apple exige dentro de um .ipa
+      - name: Empacotar para formato .ipa
+        run: |
+          mkdir -p Payload
+          cp -r ~/Library/Developer/Xcode/DerivedData/*/Build/Products/Release-iphoneos/*.app Payload/
+          zip -r swift-app.ipa Payload
+
+      # 8. Disponibiliza o arquivo .ipa para download na página do seu build no GitHub
+      - name: Upload do arquivo .ipa para o GitHub
+        uses: actions/upload-artifact@v4
+        with:
+          name: aplicativo-ios-windows
+          path: swift-app.ipa
